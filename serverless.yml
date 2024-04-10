@@ -1,0 +1,21 @@
+service: store-api
+provider:
+  name: aws
+  region: us-east-1
+  timeout: 10
+  logRetentionInDays: 3
+
+package:
+  excludeDevDependencies: false
+  artifact: target/store-api.jar
+
+functions:
+  greetingsControllerHello:
+    runtime: java17
+    handler: com.retail.storeapi.LambdaHandler::handleRequest
+    timeout: 30
+    events:
+      - http:
+          path: /greetings
+          method: get
+          cors: true
