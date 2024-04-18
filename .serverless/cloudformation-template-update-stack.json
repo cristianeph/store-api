@@ -71,10 +71,17 @@
         }
       }
     },
-    "GreetingsControllerHelloLogGroup": {
+    "GreetingsLambdaLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/store-api-dev-greetingsControllerHello",
+        "LogGroupName": "/aws/lambda/store-api-dev-greetingsLambda",
+        "RetentionInDays": 3
+      }
+    },
+    "GreetingsLambdaTestLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/store-api-dev-greetingsLambdaTest",
         "RetentionInDays": 3
       }
     },
@@ -156,18 +163,18 @@
         }
       }
     },
-    "GreetingsControllerHelloLambdaFunction": {
+    "GreetingsLambdaLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/store-api/dev/1712718945008-2024-04-10T03:15:45.008Z/store-api.jar"
+          "S3Key": "serverless/store-api/dev/1713406543901-2024-04-18T02:15:43.901Z/store-api.jar"
         },
         "Handler": "com.retail.storeapi.LambdaHandler::handleRequest",
         "Runtime": "java17",
-        "FunctionName": "store-api-dev-greetingsControllerHello",
+        "FunctionName": "store-api-dev-greetingsLambda",
         "MemorySize": 1024,
         "Timeout": 30,
         "Role": {
@@ -178,15 +185,50 @@
         }
       },
       "DependsOn": [
-        "GreetingsControllerHelloLogGroup"
+        "GreetingsLambdaLogGroup"
       ]
     },
-    "GreetingsControllerHelloLambdaVersionkY45fH9aDijxBrkxrAYRQpkscGjOcmd9V2xgznm3kk": {
+    "GreetingsLambdaTestLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/store-api/dev/1713406543901-2024-04-18T02:15:43.901Z/store-api.jar"
+        },
+        "Handler": "com.retail.storeapi.LambdaHandler::handleRequest",
+        "Runtime": "java17",
+        "FunctionName": "store-api-dev-greetingsLambdaTest",
+        "MemorySize": 1024,
+        "Timeout": 30,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GreetingsLambdaTestLogGroup"
+      ]
+    },
+    "GreetingsLambdaLambdaVersionGaFshUPZL0XR015igKodMkRALk1bPkExcXQFpXfZg": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "GreetingsControllerHelloLambdaFunction"
+          "Ref": "GreetingsLambdaLambdaFunction"
+        },
+        "CodeSha256": "K4QQws4zMAQ+UHJUnxXc0K33CK1mWJkIvZhwElG3Xs8="
+      }
+    },
+    "GreetingsLambdaTestLambdaVersionKXh12eqrNyvbXSoiTT6UqbHYEBrXo699bjRJDlXcU": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GreetingsLambdaTestLambdaFunction"
         },
         "CodeSha256": "K4QQws4zMAQ+UHJUnxXc0K33CK1mWJkIvZhwElG3Xs8="
       }
@@ -213,6 +255,18 @@
           ]
         },
         "PathPart": "greetings",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceGreetingsTest": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceGreetings"
+        },
+        "PathPart": "test",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -263,6 +317,51 @@
         }
       }
     },
+    "ApiGatewayMethodGreetingsTestOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceGreetingsTest"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
     "ApiGatewayMethodGreetingsGet": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
@@ -294,7 +393,7 @@
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "GreetingsControllerHelloLambdaFunction",
+                    "GreetingsLambdaLambdaFunction",
                     "Arn"
                   ]
                 },
@@ -306,10 +405,56 @@
         "MethodResponses": []
       },
       "DependsOn": [
-        "GreetingsControllerHelloLambdaPermissionApiGateway"
+        "GreetingsLambdaLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1712718944374": {
+    "ApiGatewayMethodGreetingsTestGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceGreetingsTest"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GreetingsLambdaTestLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GreetingsLambdaTestLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1713406543279": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -319,15 +464,54 @@
       },
       "DependsOn": [
         "ApiGatewayMethodGreetingsOptions",
-        "ApiGatewayMethodGreetingsGet"
+        "ApiGatewayMethodGreetingsTestOptions",
+        "ApiGatewayMethodGreetingsGet",
+        "ApiGatewayMethodGreetingsTestGet"
       ]
     },
-    "GreetingsControllerHelloLambdaPermissionApiGateway": {
+    "GreetingsLambdaLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
           "Fn::GetAtt": [
-            "GreetingsControllerHelloLambdaFunction",
+            "GreetingsLambdaLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "GreetingsLambdaTestLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GreetingsLambdaTestLambdaFunction",
             "Arn"
           ]
         },
@@ -369,13 +553,22 @@
         "Name": "sls-store-api-dev-ServerlessDeploymentBucketName"
       }
     },
-    "GreetingsControllerHelloLambdaFunctionQualifiedArn": {
+    "GreetingsLambdaLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GreetingsControllerHelloLambdaVersionkY45fH9aDijxBrkxrAYRQpkscGjOcmd9V2xgznm3kk"
+        "Ref": "GreetingsLambdaLambdaVersionGaFshUPZL0XR015igKodMkRALk1bPkExcXQFpXfZg"
       },
       "Export": {
-        "Name": "sls-store-api-dev-GreetingsControllerHelloLambdaFunctionQualifiedArn"
+        "Name": "sls-store-api-dev-GreetingsLambdaLambdaFunctionQualifiedArn"
+      }
+    },
+    "GreetingsLambdaTestLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GreetingsLambdaTestLambdaVersionKXh12eqrNyvbXSoiTT6UqbHYEBrXo699bjRJDlXcU"
+      },
+      "Export": {
+        "Name": "sls-store-api-dev-GreetingsLambdaTestLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
